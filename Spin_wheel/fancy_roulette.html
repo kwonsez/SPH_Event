@@ -63,7 +63,7 @@ canvas.stars{position:fixed;inset:0;pointer-events:none;z-index:0}
   position:relative;z-index:5;
   display:flex;align-items:center;justify-content:center;
   padding:clamp(14px,2.5vh,26px) clamp(18px,4vw,36px) 0;
-  width:100%;
+  width:100%;flex-shrink:0;
 }
 .logo-bar{
   display:flex;align-items:center;
@@ -195,8 +195,9 @@ canvas.leds{position:absolute;inset:-10px;z-index:1}
 /* ═══ FOOTER ═══ */
 .footer{position:relative;z-index:5;
   text-align:center;
-  padding:0 20px clamp(10px,2vh,20px);width:100%;
+  padding:clamp(8px,1.5vh,16px) 20px clamp(10px,2vh,20px);width:100%;
   padding-left:clamp(20px,4vw,50px);
+  flex-shrink:0;
 }
 .footer p{font-family:'Outfit',sans-serif;font-size:clamp(.52rem,1.1vw,.68rem);color:var(--text-faint);letter-spacing:3px;font-weight:500}
 
@@ -288,7 +289,10 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
 .port-hero{display:none}
 /* iPad landscape (4:3) */
 @media(min-aspect-ratio:4/5) and (max-aspect-ratio:5/4){
-  .wheel-area{--size:min(42vw,48vh,360px)}
+  .wheel-area{--size:min(42vw,48vh,360px);overflow:hidden}
+  .wheel-glow{inset:-10px;filter:blur(10px);opacity:.3}
+  .ring-deco{inset:-8px}
+  .ring-deco::before{inset:-4px}
   .header{padding-top:clamp(8px,1.5vh,14px)}
   .main{margin-top:0}
   .side-l{max-width:200px}
