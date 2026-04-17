@@ -472,19 +472,32 @@ function buildWheel(){
     }
     c.restore();
 
-    // radial text (center→outward along slice)
-    c.save();c.translate(cx,cy);c.rotate(a0+ARC/2);
-    const lines=sg.lines||[sg.label];
-    const fs=lines.length>1?R*.072:R*.082;
-    const lh=fs*1.12;
-    c.font=`900 ${fs}px 'Noto Sans KR',sans-serif`;
-    c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';
-    c.shadowColor='rgba(0,0,0,.75)';c.shadowBlur=4*DPR;c.shadowOffsetY=1*DPR;
-    for(let li=0;li<lines.length;li++){
-      const yOff=(li-(lines.length-1)/2)*lh;
-      c.fillText(lines[li],R*.82,yOff);
+    // arc text along outer rim
+    c.save();
+    const arcR=R*.88;
+    const fs=R*.065;
+    c.font=`800 ${fs}px 'Noto Sans KR',sans-serif`;
+    c.fillStyle='#fff';
+    c.shadowColor='rgba(0,0,0,.6)';c.shadowBlur=3*DPR;
+    c.textAlign='center';c.textBaseline='middle';
+    const label=sg.label;
+    let totalW=0;
+    for(let ch=0;ch<label.length;ch++){totalW+=c.measureText(label[ch]).width;}
+    const totalAng=totalW/arcR;
+    const midAng=(a0+a1)/2;
+    let curAng=midAng-totalAng/2;
+    for(let ch=0;ch<label.length;ch++){
+      const chW=c.measureText(label[ch]).width;
+      const chAng=chW/arcR;
+      const ang=curAng+chAng/2;
+      c.save();
+      c.translate(cx+Math.cos(ang)*arcR,cy+Math.sin(ang)*arcR);
+      c.rotate(ang+Math.PI/2);
+      c.fillText(label[ch],0,0);
+      c.restore();
+      curAng+=chAng;
     }
-    c.shadowBlur=0;c.shadowOffsetY=0;c.restore();
+    c.shadowBlur=0;c.restore();
   }
 
   // hub
