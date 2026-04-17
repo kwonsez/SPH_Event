@@ -452,9 +452,12 @@ function buildWheel(){
     c.beginPath();c.arc(cx,cy,R-2*DPR,a0+.03,a1-.03);
     c.strokeStyle='rgba(255,255,255,.06)';c.lineWidth=3*DPR;c.stroke();
 
-    // product image (top points outward, same as label direction)
-    c.save();c.translate(cx,cy);c.rotate(a0+ARC/2);
-    c.translate(R*.58,0);c.rotate(Math.PI/2);
+    // product image (top points outward, flip for bottom half)
+    const imgMidAng=a0+ARC/2;
+    const imgNm=((imgMidAng%(Math.PI*2))+(Math.PI*2))%(Math.PI*2);
+    const imgFlipped=(imgNm>Math.PI*0.25&&imgNm<Math.PI*1.25);
+    c.save();c.translate(cx,cy);c.rotate(imgMidAng);
+    c.translate(imgFlipped?R*.42:R*.58,0);c.rotate(imgFlipped?-Math.PI/2:Math.PI/2);
     const imgKey=cKey(sg.id);
     if(prizeImgsLoaded&&prizeImgCache[imgKey]){
       const img=prizeImgCache[imgKey];
@@ -470,31 +473,48 @@ function buildWheel(){
     }
     c.restore();
 
-    // arc text along outer rim
+    // arc text along outer rim (flip for bottom half)
     c.save();
-    const arcR=R*.88;
     const fs=R*.065;
     c.font=`800 ${fs}px 'Noto Sans KR',sans-serif`;
     c.fillStyle='#fff';
     c.shadowColor='rgba(0,0,0,.6)';c.shadowBlur=3*DPR;
     c.textAlign='center';c.textBaseline='middle';
     const label=sg.label;
-    const charAngles=[];
     let totalW=0;
     for(let ch=0;ch<label.length;ch++){totalW+=c.measureText(label[ch]).width;}
-    const totalAng=totalW/arcR;
     const midAng=(a0+a1)/2;
-    let curAng=midAng-totalAng/2;
-    for(let ch=0;ch<label.length;ch++){
-      const chW=c.measureText(label[ch]).width;
-      const chAng=chW/arcR;
-      const ang=curAng+chAng/2;
-      c.save();
-      c.translate(cx+Math.cos(ang)*arcR,cy+Math.sin(ang)*arcR);
-      c.rotate(ang+Math.PI/2);
-      c.fillText(label[ch],0,0);
-      c.restore();
-      curAng+=chAng;
+    // normalize midAng to 0~2PI
+    const nm=((midAng%(Math.PI*2))+(Math.PI*2))%(Math.PI*2);
+    const flipped=(nm>Math.PI*0.25&&nm<Math.PI*1.25);
+    const arcR=flipped?R*.78:R*.88;
+    const totalAng=totalW/arcR;
+    if(!flipped){
+      let curAng=midAng-totalAng/2;
+      for(let ch=0;ch<label.length;ch++){
+        const chW=c.measureText(label[ch]).width;
+        const chAng=chW/arcR;
+        const ang=curAng+chAng/2;
+        c.save();
+        c.translate(cx+Math.cos(ang)*arcR,cy+Math.sin(ang)*arcR);
+        c.rotate(ang+Math.PI/2);
+        c.fillText(label[ch],0,0);
+        c.restore();
+        curAng+=chAng;
+      }
+    }else{
+      let curAng=midAng+totalAng/2;
+      for(let ch=0;ch<label.length;ch++){
+        const chW=c.measureText(label[ch]).width;
+        const chAng=chW/arcR;
+        const ang=curAng-chAng/2;
+        c.save();
+        c.translate(cx+Math.cos(ang)*arcR,cy+Math.sin(ang)*arcR);
+        c.rotate(ang-Math.PI/2);
+        c.fillText(label[ch],0,0);
+        c.restore();
+        curAng-=chAng;
+      }
     }
     c.shadowBlur=0;c.restore();
   }
@@ -646,7 +666,12 @@ function onDone(res){playFanfare();launchConfetti();
 
 // ━━━ SERVER ━━━
 async function serverSpin(){return(await fetch(GAS_URL+'?action=spin',{redirect:'follow'})).json()}
-async function loadStock(){const d=await(await fetch(GAS_URL+'?action=stock',{redirect:'follow'})).json();stock=d.stock||{};}
+async function loadStock(){
+  const ctrl=new AbortController();
+  const tmr=setTimeout(()=>ctrl.abort(),8000);
+  try{const d=await(await fetch(GAS_URL+'?action=stock',{redirect:'follow',signal:ctrl.signal})).json();stock=d.stock||{};}
+  finally{clearTimeout(tmr);}
+}
 
 // ━━━ TOAST ━━━
 let tt;function toast(m){clearTimeout(tt);$t.textContent=m;$t.classList.add('on');tt=setTimeout(()=>$t.classList.remove('on'),3500)}
