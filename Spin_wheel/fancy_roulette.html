@@ -286,6 +286,18 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
   }
 }
 .port-hero{display:none}
+/* iPad landscape (4:3) */
+@media(min-aspect-ratio:4/5) and (max-aspect-ratio:5/4){
+  .wheel-area{--size:min(52vw,62vh,460px)}
+  .side-l{max-width:200px}
+  .side-r{max-width:160px}
+  .main{gap:clamp(12px,3vw,30px)}
+  .logo-bar img{max-width:120px}
+  .logo-main{height:clamp(24px,3.5vh,36px)}
+  .logo-partners img{height:clamp(18px,2.8vh,28px)}
+  #logoSigma{height:clamp(50px,8vh,75px)}
+}
+/* Widescreen */
 @media(min-aspect-ratio:5/4){.wheel-area{--size:min(60vw,75vh,600px)}}
 </style>
 </head>
@@ -456,12 +468,12 @@ function buildWheel(){
     c.save();
     c.beginPath();c.moveTo(cx,cy);c.arc(cx,cy,R,a0,a1);c.closePath();c.clip();
     c.translate(cx,cy);c.rotate(a0+ARC/2);
-    c.translate(R*.55,0);c.rotate(Math.PI/2);
+    c.translate(R*.62,0);c.rotate(Math.PI/2);
     const imgKey=cKey(sg.id);
     if(prizeImgsLoaded&&prizeImgCache[imgKey]){
       const img=prizeImgCache[imgKey];
       c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
-      const imgS=imgKey==='umbrella'?R*.26:R*.36;
+      const imgS=imgKey==='umbrella'?R*.24:R*.34;
       const aspect=img.width/img.height;
       const dw=aspect>=1?imgS:imgS*aspect;
       const dh=aspect>=1?imgS/aspect:imgS;
